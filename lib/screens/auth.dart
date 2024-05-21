@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+final firebase = FirebaseAuth.instance;
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -13,13 +16,25 @@ class _AuthScreenState extends State<AuthScreen> {
   var enteredEmail = '';
   var enteredPassword = '';
 
-  void submit() {
+  void submit() async {
     final isValid = formKey.currentState!.validate();
 
-    if (isValid) {
-      formKey.currentState!.save();
-      print(enteredEmail);
-      print(enteredPassword);
+    if (!isValid) {
+      return;
+    }
+    formKey.currentState!.save();
+
+    if (isLogin) {
+    } else {
+      try {
+        final userCredetials = await firebase.createUserWithEmailAndPassword(
+            email: enteredEmail, password: enteredPassword);
+        print(userCredetials);
+      } on FirebaseAuthException catch (error) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.message ?? 'Auth Failed')));
+      }
     }
   }
 
